@@ -1,0 +1,665 @@
+{
+  "kind": "research_guidance",
+  "run_initialized_at": "2026-09-29T00:00:00+00:00",
+  "generated_at": "2026-09-29T11:40:53.197174+00:00",
+  "assumed_issue_time": "2026-09-29T06:00:00+00:00",
+  "availability_caveat": "Historical publication time not verified; 6 h run latency assumed for retrospective history gate",
+  "validation_state_sha256": "d1a6846401639c9a5bd61892200929928e2b8b0b9cf86b354768c5946b4a2fab",
+  "reference": "Open-Meteo ERA5 reanalysis, not station observations",
+  "records": [
+    {
+      "region": "Mumbai",
+      "latitude": 19.076,
+      "longitude": 72.878,
+      "variable": "rain",
+      "lead_hours": 27,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-09-30T03:00:00+00:00",
+      "sources": {
+        "IFS": 2.7,
+        "GFS": 4.1,
+        "AIFS": 4.5
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.323051+00:00",
+          "payload_sha256": "c176c30b1f0e0c481c67c3be5bcc910c8989ddf4d9d862191544e74eae91504e",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.829432+00:00",
+          "payload_sha256": "b6925186f2279bf6d87c219c08efdac46435b546b39311bf42b220c5926e74bb",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:50.366504+00:00",
+          "payload_sha256": "44948e282638bfb7c00f5fec31f4481156d5322bbab5dc7a20376c42bb333952",
+          "publication_time": null
+        }
+      },
+      "window_start": "2026-09-29T03:00:00+00:00",
+      "window_end": "2026-09-30T03:00:00+00:00",
+      "point": 3.767,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "heavy": null,
+        "very_heavy": null,
+        "extremely_heavy": null
+      },
+      "weights": {
+        "IFS": 0.3333333333333333,
+        "GFS": 0.3333333333333333,
+        "AIFS": 0.3333333333333333
+      },
+      "status": "point only",
+      "point_method": "equal",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "pbc"
+    },
+    {
+      "region": "Mumbai",
+      "latitude": 19.076,
+      "longitude": 72.878,
+      "variable": "rain",
+      "lead_hours": 75,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-10-02T03:00:00+00:00",
+      "sources": {
+        "IFS": 0.6000000000000001,
+        "GFS": 0.8999999999999999,
+        "AIFS": 0.6000000000000001
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.323051+00:00",
+          "payload_sha256": "c176c30b1f0e0c481c67c3be5bcc910c8989ddf4d9d862191544e74eae91504e",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.829432+00:00",
+          "payload_sha256": "b6925186f2279bf6d87c219c08efdac46435b546b39311bf42b220c5926e74bb",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:50.366504+00:00",
+          "payload_sha256": "44948e282638bfb7c00f5fec31f4481156d5322bbab5dc7a20376c42bb333952",
+          "publication_time": null
+        }
+      },
+      "window_start": "2026-10-01T03:00:00+00:00",
+      "window_end": "2026-10-02T03:00:00+00:00",
+      "point": 0.7,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "heavy": null,
+        "very_heavy": null,
+        "extremely_heavy": null
+      },
+      "weights": {
+        "IFS": 0.3333333333333333,
+        "GFS": 0.3333333333333333,
+        "AIFS": 0.3333333333333333
+      },
+      "status": "point only",
+      "point_method": "equal",
+      "selection_note": "Held-out harm gate used; a fresh untouched period is needed for final skill claims",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "pbc"
+    },
+    {
+      "region": "Mumbai",
+      "latitude": 19.076,
+      "longitude": 72.878,
+      "variable": "temperature",
+      "lead_hours": 24,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-09-30T00:00:00+00:00",
+      "sources": {
+        "IFS": 24.4,
+        "GFS": 26.7,
+        "AIFS": 26.3
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.323051+00:00",
+          "payload_sha256": "c176c30b1f0e0c481c67c3be5bcc910c8989ddf4d9d862191544e74eae91504e",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.829432+00:00",
+          "payload_sha256": "b6925186f2279bf6d87c219c08efdac46435b546b39311bf42b220c5926e74bb",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:50.366504+00:00",
+          "payload_sha256": "44948e282638bfb7c00f5fec31f4481156d5322bbab5dc7a20376c42bb333952",
+          "publication_time": null
+        }
+      },
+      "window_start": null,
+      "window_end": null,
+      "point": 26.837,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "defined_event": null
+      },
+      "weights": {
+        "AIFS": 1.0
+      },
+      "status": "point only",
+      "point_method": "AIFS_corrected",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "raw"
+    },
+    {
+      "region": "Mumbai",
+      "latitude": 19.076,
+      "longitude": 72.878,
+      "variable": "temperature",
+      "lead_hours": 72,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-10-02T00:00:00+00:00",
+      "sources": {
+        "IFS": 26.1,
+        "GFS": 27.9,
+        "AIFS": 27.3
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.323051+00:00",
+          "payload_sha256": "c176c30b1f0e0c481c67c3be5bcc910c8989ddf4d9d862191544e74eae91504e",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.829432+00:00",
+          "payload_sha256": "b6925186f2279bf6d87c219c08efdac46435b546b39311bf42b220c5926e74bb",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:50.366504+00:00",
+          "payload_sha256": "44948e282638bfb7c00f5fec31f4481156d5322bbab5dc7a20376c42bb333952",
+          "publication_time": null
+        }
+      },
+      "window_start": null,
+      "window_end": null,
+      "point": 27.936,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "defined_event": null
+      },
+      "weights": {
+        "AIFS": 1.0
+      },
+      "status": "point only",
+      "point_method": "AIFS_corrected",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "raw"
+    },
+    {
+      "region": "Mumbai",
+      "latitude": 19.076,
+      "longitude": 72.878,
+      "variable": "wind",
+      "lead_hours": 24,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-09-30T00:00:00+00:00",
+      "sources": {
+        "IFS": 1.03,
+        "GFS": 2.53,
+        "AIFS": 0.64
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.323051+00:00",
+          "payload_sha256": "c176c30b1f0e0c481c67c3be5bcc910c8989ddf4d9d862191544e74eae91504e",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.829432+00:00",
+          "payload_sha256": "b6925186f2279bf6d87c219c08efdac46435b546b39311bf42b220c5926e74bb",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:50.366504+00:00",
+          "payload_sha256": "44948e282638bfb7c00f5fec31f4481156d5322bbab5dc7a20376c42bb333952",
+          "publication_time": null
+        }
+      },
+      "window_start": null,
+      "window_end": null,
+      "point": 1.4,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "defined_event": null
+      },
+      "weights": {
+        "IFS": 0.3333333333333333,
+        "GFS": 0.3333333333333333,
+        "AIFS": 0.3333333333333333
+      },
+      "status": "point only",
+      "point_method": "equal",
+      "selection_note": "Held-out harm gate used; a fresh untouched period is needed for final skill claims",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "raw"
+    },
+    {
+      "region": "Mumbai",
+      "latitude": 19.076,
+      "longitude": 72.878,
+      "variable": "wind",
+      "lead_hours": 72,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-10-02T00:00:00+00:00",
+      "sources": {
+        "IFS": 1.44,
+        "GFS": 1.72,
+        "AIFS": 1.66
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.323051+00:00",
+          "payload_sha256": "c176c30b1f0e0c481c67c3be5bcc910c8989ddf4d9d862191544e74eae91504e",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:49.829432+00:00",
+          "payload_sha256": "b6925186f2279bf6d87c219c08efdac46435b546b39311bf42b220c5926e74bb",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:50.366504+00:00",
+          "payload_sha256": "44948e282638bfb7c00f5fec31f4481156d5322bbab5dc7a20376c42bb333952",
+          "publication_time": null
+        }
+      },
+      "window_start": null,
+      "window_end": null,
+      "point": 1.86,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "defined_event": null
+      },
+      "weights": {
+        "AIFS": 1.0
+      },
+      "status": "point only",
+      "point_method": "AIFS_corrected",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "raw"
+    },
+    {
+      "region": "Pune",
+      "latitude": 18.52,
+      "longitude": 73.857,
+      "variable": "rain",
+      "lead_hours": 27,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-09-30T03:00:00+00:00",
+      "sources": {
+        "IFS": 7.5,
+        "GFS": 6.1000000000000005,
+        "AIFS": 4.5
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:51.558033+00:00",
+          "payload_sha256": "c8473ba7918e37af84c1de817919f6dde6831ebf530b6f45cc82a2d8a30fce1f",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.091507+00:00",
+          "payload_sha256": "038d6b192912c2f267638c7d75cf77b7e24f41c7e5b64fbba8d85757964cff03",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.629460+00:00",
+          "payload_sha256": "dd71c53c01ab4586d67a48c57579bfe01f822a9d518fcad3b5d8eca5c0832dd7",
+          "publication_time": null
+        }
+      },
+      "window_start": "2026-09-29T03:00:00+00:00",
+      "window_end": "2026-09-30T03:00:00+00:00",
+      "point": 6.033,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "heavy": null,
+        "very_heavy": null,
+        "extremely_heavy": null
+      },
+      "weights": {
+        "IFS": 0.3333333333333333,
+        "GFS": 0.3333333333333333,
+        "AIFS": 0.3333333333333333
+      },
+      "status": "point only",
+      "point_method": "equal",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "pbc"
+    },
+    {
+      "region": "Pune",
+      "latitude": 18.52,
+      "longitude": 73.857,
+      "variable": "rain",
+      "lead_hours": 75,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-10-02T03:00:00+00:00",
+      "sources": {
+        "IFS": 1.2,
+        "GFS": 2.1,
+        "AIFS": 0.6000000000000001
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:51.558033+00:00",
+          "payload_sha256": "c8473ba7918e37af84c1de817919f6dde6831ebf530b6f45cc82a2d8a30fce1f",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.091507+00:00",
+          "payload_sha256": "038d6b192912c2f267638c7d75cf77b7e24f41c7e5b64fbba8d85757964cff03",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.629460+00:00",
+          "payload_sha256": "dd71c53c01ab4586d67a48c57579bfe01f822a9d518fcad3b5d8eca5c0832dd7",
+          "publication_time": null
+        }
+      },
+      "window_start": "2026-10-01T03:00:00+00:00",
+      "window_end": "2026-10-02T03:00:00+00:00",
+      "point": 1.3,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "heavy": null,
+        "very_heavy": null,
+        "extremely_heavy": null
+      },
+      "weights": {
+        "IFS": 0.3333333333333333,
+        "GFS": 0.3333333333333333,
+        "AIFS": 0.3333333333333333
+      },
+      "status": "point only",
+      "point_method": "equal",
+      "selection_note": "Held-out harm gate used; a fresh untouched period is needed for final skill claims",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "pbc"
+    },
+    {
+      "region": "Pune",
+      "latitude": 18.52,
+      "longitude": 73.857,
+      "variable": "temperature",
+      "lead_hours": 24,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-09-30T00:00:00+00:00",
+      "sources": {
+        "IFS": 21.2,
+        "GFS": 22.3,
+        "AIFS": 22.8
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:51.558033+00:00",
+          "payload_sha256": "c8473ba7918e37af84c1de817919f6dde6831ebf530b6f45cc82a2d8a30fce1f",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.091507+00:00",
+          "payload_sha256": "038d6b192912c2f267638c7d75cf77b7e24f41c7e5b64fbba8d85757964cff03",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.629460+00:00",
+          "payload_sha256": "dd71c53c01ab4586d67a48c57579bfe01f822a9d518fcad3b5d8eca5c0832dd7",
+          "publication_time": null
+        }
+      },
+      "window_start": null,
+      "window_end": null,
+      "point": 23.337,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "defined_event": null
+      },
+      "weights": {
+        "AIFS": 1.0
+      },
+      "status": "point only",
+      "point_method": "AIFS_corrected",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "raw"
+    },
+    {
+      "region": "Pune",
+      "latitude": 18.52,
+      "longitude": 73.857,
+      "variable": "temperature",
+      "lead_hours": 72,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-10-02T00:00:00+00:00",
+      "sources": {
+        "IFS": 22.0,
+        "GFS": 24.3,
+        "AIFS": 24.0
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:51.558033+00:00",
+          "payload_sha256": "c8473ba7918e37af84c1de817919f6dde6831ebf530b6f45cc82a2d8a30fce1f",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.091507+00:00",
+          "payload_sha256": "038d6b192912c2f267638c7d75cf77b7e24f41c7e5b64fbba8d85757964cff03",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.629460+00:00",
+          "payload_sha256": "dd71c53c01ab4586d67a48c57579bfe01f822a9d518fcad3b5d8eca5c0832dd7",
+          "publication_time": null
+        }
+      },
+      "window_start": null,
+      "window_end": null,
+      "point": 24.636,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "defined_event": null
+      },
+      "weights": {
+        "AIFS": 1.0
+      },
+      "status": "point only",
+      "point_method": "AIFS_corrected",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "raw"
+    },
+    {
+      "region": "Pune",
+      "latitude": 18.52,
+      "longitude": 73.857,
+      "variable": "wind",
+      "lead_hours": 24,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-09-30T00:00:00+00:00",
+      "sources": {
+        "IFS": 0.61,
+        "GFS": 0.89,
+        "AIFS": 0.14
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:51.558033+00:00",
+          "payload_sha256": "c8473ba7918e37af84c1de817919f6dde6831ebf530b6f45cc82a2d8a30fce1f",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.091507+00:00",
+          "payload_sha256": "038d6b192912c2f267638c7d75cf77b7e24f41c7e5b64fbba8d85757964cff03",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.629460+00:00",
+          "payload_sha256": "dd71c53c01ab4586d67a48c57579bfe01f822a9d518fcad3b5d8eca5c0832dd7",
+          "publication_time": null
+        }
+      },
+      "window_start": null,
+      "window_end": null,
+      "point": 0.547,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "defined_event": null
+      },
+      "weights": {
+        "IFS": 0.3333333333333333,
+        "GFS": 0.3333333333333333,
+        "AIFS": 0.3333333333333333
+      },
+      "status": "point only",
+      "point_method": "equal",
+      "selection_note": "Held-out harm gate used; a fresh untouched period is needed for final skill claims",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "raw"
+    },
+    {
+      "region": "Pune",
+      "latitude": 18.52,
+      "longitude": 73.857,
+      "variable": "wind",
+      "lead_hours": 72,
+      "run_initialized_at": "2026-09-29T00:00:00+00:00",
+      "valid_time": "2026-10-02T00:00:00+00:00",
+      "sources": {
+        "IFS": 0.2,
+        "GFS": 1.68,
+        "AIFS": 1.79
+      },
+      "missing_sources": [],
+      "source_status": {
+        "IFS": {
+          "model_id": "ecmwf_ifs025",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:51.558033+00:00",
+          "payload_sha256": "c8473ba7918e37af84c1de817919f6dde6831ebf530b6f45cc82a2d8a30fce1f",
+          "publication_time": null
+        },
+        "GFS": {
+          "model_id": "gfs_global",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.091507+00:00",
+          "payload_sha256": "038d6b192912c2f267638c7d75cf77b7e24f41c7e5b64fbba8d85757964cff03",
+          "publication_time": null
+        },
+        "AIFS": {
+          "model_id": "ecmwf_aifs025_single",
+          "run_initialized_at": "2026-09-29T00:00:00+00:00",
+          "retrieved_at": "2026-09-29T11:40:52.629460+00:00",
+          "payload_sha256": "dd71c53c01ab4586d67a48c57579bfe01f822a9d518fcad3b5d8eca5c0832dd7",
+          "publication_time": null
+        }
+      },
+      "window_start": null,
+      "window_end": null,
+      "point": 1.99,
+      "hazard_probability": null,
+      "event_probabilities": {
+        "defined_event": null
+      },
+      "weights": {
+        "AIFS": 1.0
+      },
+      "status": "point only",
+      "point_method": "AIFS_corrected",
+      "reason": "hazard probability withheld: fewer than 10 validation events",
+      "probability_method": "raw"
+    }
+  ],
+  "source_errors": [],
+  "model_ids": {
+    "IFS": "ecmwf_ifs025",
+    "GFS": "gfs_global",
+    "AIFS": "ecmwf_aifs025_single"
+  }
+}

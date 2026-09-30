@@ -1,0 +1,47 @@
+{
+  "kind": "retrospective_reanalysis",
+  "truth": "Open-Meteo ERA5 reanalysis, not station observations",
+  "source": "Open-Meteo Single Runs API",
+  "model_ids": {
+    "IFS": "ecmwf_ifs025",
+    "GFS": "gfs_global",
+    "AIFS": "ecmwf_aifs025_single"
+  },
+  "rain_window": "03:00 UTC (08:30 IST) 24h ending at valid_time",
+  "availability": "run-specific initiation known; historical publication time unverified",
+  "start": "2026-04-10",
+  "days": 130,
+  "regions": [
+    "Mumbai",
+    "Pune"
+  ],
+  "cases": 1552,
+  "failed_requests": [
+    {
+      "region": "Mumbai",
+      "source": "IFS",
+      "run": "2026-06-11T00:00:00+00:00",
+      "error": "HTTP Error 400: Bad Request"
+    },
+    {
+      "region": "Mumbai",
+      "source": "AIFS",
+      "run": "2026-06-11T00:00:00+00:00",
+      "error": "HTTP Error 400: Bad Request"
+    },
+    {
+      "region": "Pune",
+      "source": "IFS",
+      "run": "2026-06-11T00:00:00+00:00",
+      "error": "HTTP Error 400: Bad Request"
+    },
+    {
+      "region": "Pune",
+      "source": "AIFS",
+      "run": "2026-06-11T00:00:00+00:00",
+      "error": "HTTP Error 400: Bad Request"
+    }
+  ],
+  "cases_sha256": "9a9e3e697cbd876efdbf5b300193485f41fd8017b5831ceec35e63268a00d691",
+  "raw_cache_files": 784
+}

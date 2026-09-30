@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+data/*
+!data/archive/
+output/*
+!output/state.json
+!output/data-audit.json
+!output/issued/
+output/issued/*
+!output/issued/latest.json

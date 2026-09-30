@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-09-30T05:24:42.667724+00:00",
+  "data_kind": "retrospective_reanalysis",
+  "regions": [
+    "Mumbai",
+    "Pune"
+  ],
+  "archive_cases": 1552,
+  "displayed_cases": 312,
+  "values_matched_to_cached_responses": 6200,
+  "missing_source_values": 8,
+  "raw_response_files_checked": 778,
+  "issued_records": 12,
+  "cases_sha256": "9a9e3e697cbd876efdbf5b300193485f41fd8017b5831ceec35e63268a00d691",
+  "reference": "Open-Meteo ERA5 reanalysis, not station observations",
+  "limits": "Checks saved downloads and provenance; not station observations or independent provider authentication."
+}
