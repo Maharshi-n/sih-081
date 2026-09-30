@@ -6,10 +6,13 @@ import hashlib
 import json
 import math
 import random
+import statistics
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
 
 SOURCES = {"IFS": "ecmwf_ifs025", "GFS": "gfs_global", "AIFS": "ecmwf_aifs025_single"}
 PLACES = {
@@ -17,10 +20,13 @@ PLACES = {
     "Pune": (18.520, 73.857),
     "Chennai": (13.083, 80.270),
     "Bengaluru": (12.972, 77.595),
+    "Delhi": (28.614, 77.209),
 }
 VARIABLES = {"temperature": ("temperature_2m", "°C"), "wind": ("wind_speed_10m", "m/s"), "rain": ("precipitation", "mm/24h")}
 REQUIRED_FIELDS = ["issue_time", "valid_time", "observed_at", "region", "latitude", "longitude", "variable", "lead_hours", "observation", "IFS", "GFS", "AIFS"]
-FIELDS = REQUIRED_FIELDS + ["observation_source", "observation_quality", "window_start", "window_end"]
+FIELDS = REQUIRED_FIELDS + ["observation_source", "observation_quality", "window_start", "window_end",
+                            "unit", "observation_support", "representativeness_status", "representativeness_evidence",
+                            "release_time_basis", "source_url", "units_verified", "spatial_support_verified"]
 
 
 def write_cases(path: Path, cases: list[dict]) -> None:
@@ -52,9 +58,18 @@ def read_cases(path: Path) -> list[dict]:
                             raise ValueError(f"{key} must include a timezone")
                 for key in ("latitude", "longitude", "observation", "IFS", "GFS", "AIFS"):
                     row[key] = float(row[key]) if row[key] not in ("", None) else None
+                for key in ("units_verified", "spatial_support_verified"):
+                    value = (row.get(key) or "").lower()
+                    if value not in ("", "true", "false", "1", "0"):
+                        raise ValueError(f"{key} must be a boolean")
+                    row[key] = value in ("true", "1")
                 row["lead_hours"] = int(row["lead_hours"])
                 if row["variable"] not in VARIABLES or row["lead_hours"] <= 0:
                     raise ValueError("invalid variable or lead")
+                if row.get("unit") and row["unit"] != VARIABLES[row["variable"]][1]:
+                    raise ValueError("unit does not match variable")
+                if row["observation"] is None:
+                    raise ValueError("observation is required")
                 if row["valid_time"] <= row["issue_time"] or row["observed_at"] < row["valid_time"]:
                     raise ValueError("invalid timing")
                 if row.get("observation_quality") and row["observation_quality"] != "pass":
@@ -119,8 +134,37 @@ def demo_cases(days: int = 240, seed: int = 26081) -> list[dict]:
 
 
 def _get_json(url: str) -> dict:
-    with urlopen(url, timeout=35) as response:
-        return json.load(response)
+    for attempt in range(3):
+        try:
+            with urlopen(url, timeout=35) as response:
+                return json.load(response)
+        except (HTTPError, URLError, TimeoutError) as error:
+            if isinstance(error, HTTPError) and error.code not in (429, 500, 502, 503, 504):
+                raise
+            if attempt == 2:
+                raise
+            retry_after = error.headers.get("Retry-After", "0") if isinstance(error, HTTPError) else "0"
+            delay = min(60, max(2 ** (attempt + 1), float(retry_after) if retry_after.isdigit() else 0))
+            time.sleep(delay)
+
+
+def _check_payload(payload: dict) -> None:
+    """Reject silently changed units/time zones before caching or matching real values."""
+    if payload.get("utc_offset_seconds") != 0:
+        raise ValueError("Forecast/reference payload must use UTC")
+    times = payload.get("hourly", {}).get("time")
+    if not isinstance(times, list) or not times or any(not isinstance(value, str) for value in times) or times != sorted(set(times)):
+        raise ValueError("Hourly timestamps must be unique and chronological")
+    for value in times:
+        datetime.fromisoformat(value)
+    for field, expected in (("temperature_2m", "°C"), ("wind_speed_10m", "m/s"), ("precipitation", "mm")):
+        if payload.get("hourly_units", {}).get(field) != expected:
+            raise ValueError(f"Unexpected API unit for {field}")
+        series = payload.get("hourly", {}).get(field)
+        if not isinstance(series, list) or len(series) != len(payload.get("hourly", {}).get("time", [])):
+            raise ValueError(f"Invalid hourly series for {field}")
+        if any(value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or (field != "temperature_2m" and value < 0)) for value in series):
+            raise ValueError(f"Invalid real source values for {field}")
 
 
 def fetch_run(run: datetime, region: str, lat: float, lon: float, source: str) -> dict:
@@ -152,6 +196,7 @@ def fetch_cases(start: str, days: int, regions: list[str], out: Path, rain_windo
     out.mkdir(parents=True, exist_ok=True)
     cases = []
     failures = []
+    grid_support = {}
     for region in regions:
         lat, lon = PLACES[region]
         obs_end = (begin + timedelta(days=days + 4)).date().isoformat()
@@ -160,8 +205,12 @@ def fetch_cases(start: str, days: int, regions: list[str], out: Path, rain_windo
             obs_payload = json.loads(obs_file.read_text(encoding="utf-8"))
         else:
             obs_payload = fetch_reanalysis(start, obs_end, lat, lon)
+            _check_payload(obs_payload)
             obs_file.parent.mkdir(exist_ok=True)
             obs_file.write_text(json.dumps(obs_payload), encoding="utf-8")
+        _check_payload(obs_payload)
+        grid_support[region] = {"requested_point": {"latitude": lat, "longitude": lon},
+                                "ERA5": {"latitude": obs_payload.get("latitude"), "longitude": obs_payload.get("longitude")}}
         obs = obs_payload["hourly"]
         observed = {t: i for i, t in enumerate(obs["time"])}
         for day in range(days):
@@ -171,6 +220,8 @@ def fetch_cases(start: str, days: int, regions: list[str], out: Path, rain_windo
                 try:
                     raw_file = out / "raw" / f"{region}-{source}-{run.date()}.json"
                     payload = json.loads(raw_file.read_text(encoding="utf-8")) if raw_file.exists() else fetch_run(run, region, lat, lon, source)
+                    _check_payload(payload)
+                    grid_support[region][source] = {"latitude": payload.get("latitude"), "longitude": payload.get("longitude")}
                     runs[source] = payload["hourly"]
                     (out / "raw").mkdir(exist_ok=True)
                     if not raw_file.exists():
@@ -197,6 +248,10 @@ def fetch_cases(start: str, days: int, regions: list[str], out: Path, rain_windo
                            "region": region, "latitude": lat, "longitude": lon,
                            "variable": variable, "lead_hours": lead, "observation": truth,
                            "observation_source": "Open-Meteo ERA5 reanalysis", "observation_quality": "",
+                           "unit": unit, "observation_support": "grid_cell",
+                           "units_verified": True, "spatial_support_verified": False,
+                           "representativeness_status": "unverified", "release_time_basis": "assumed 7 day reanalysis delay, not verified publication time",
+                           "source_url": "https://archive-api.open-meteo.com/v1/archive",
                            "window_start": (valid - timedelta(hours=24)).isoformat() if variable == "rain" else "",
                            "window_end": valid.isoformat() if variable == "rain" else ""}
                     for source in SOURCES:
@@ -219,15 +274,27 @@ def fetch_cases(start: str, days: int, regions: list[str], out: Path, rain_windo
                 "availability": "run-specific initiation known; historical publication time unverified",
                 "start": start, "days": days, "regions": regions, "cases": len(cases), "failed_requests": failures,
                 "cases_sha256": digest, "raw_cache_files": len(list((out / "raw").glob("*.json")))}
+    manifest["observation_latency_hours"] = {"min": 168.0, "median": 168.0, "max": 168.0, "basis": "assumed delay, not measured publication latency"}
+    manifest["spatial_representativeness"] = "unverified; nearest model/reanalysis grids differ from requested point coordinates"
+    manifest["provider_grid_support"] = grid_support
+    manifest["units_verified"] = True
+    manifest["spatial_support_verified"] = False
+    manifest["latency_manifest"] = manifest["observation_latency_hours"]
+    manifest["raw_payload_sha256"] = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in sorted((out / "raw").glob("*.json"))}
+    manifest["coverage"] = {region: {"cases": sum(row["region"] == region for row in cases),
+                                     "issue_dates": len({row["issue_time"][:10] for row in cases if row["region"] == region}),
+                                     "valid_months": sorted({row["valid_time"][:7] for row in cases if row["region"] == region})} for region in regions}
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest
 
 
-def merge_observations(cases_path: Path, observations_path: Path, out: Path) -> dict:
+def merge_observations(cases_path: Path, observations_path: Path, out: Path, strict: bool = False) -> dict:
     """Replace reanalysis truth with explicitly matched, quality-checked observations."""
     base = read_cases(cases_path)
     required = {"region", "latitude", "longitude", "variable", "valid_time", "observation",
                 "observed_at", "source", "quality", "window_start", "window_end"}
+    if strict:
+        required.add("unit")
     references = {}
     with observations_path.open(newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
@@ -237,18 +304,35 @@ def merge_observations(cases_path: Path, observations_path: Path, out: Path) -> 
             try:
                 if raw["quality"].lower() != "pass" or not raw["source"].strip():
                     raise ValueError("quality must be pass and source must be named")
+                if any(label in raw["source"].lower() for label in ("era5", "reanalysis", "synthetic")):
+                    raise ValueError("reanalysis or synthetic values cannot be imported as observations")
                 for field in ("valid_time", "observed_at", "window_start", "window_end"):
                     raw[field] = datetime.fromisoformat(raw[field].replace("Z", "+00:00")) if raw[field] else None
                     if raw[field] is not None and raw[field].tzinfo is None:
                         raise ValueError(f"{field} needs a timezone")
                 raw["latitude"], raw["longitude"] = float(raw["latitude"]), float(raw["longitude"])
                 raw["observation"] = float(raw["observation"])
-                if not math.isfinite(raw["observation"]) or raw["observed_at"] < raw["valid_time"]:
+                raw["unit"] = raw.get("unit", "").strip()
+                if raw["variable"] not in VARIABLES or (raw["unit"] and raw["unit"] != VARIABLES[raw["variable"]][1]) or (strict and not raw["unit"]):
+                    raise ValueError("unit or variable invalid; use °C, m/s, or mm/24h")
+                if not raw["region"].strip() or not all(math.isfinite(raw[k]) for k in ("latitude", "longitude", "observation")) or not (-90 <= raw["latitude"] <= 90 and -180 <= raw["longitude"] <= 180):
+                    raise ValueError("invalid region or finite coordinates")
+                if raw["valid_time"] is None or raw["observed_at"] is None or raw["observed_at"] < raw["valid_time"] or raw["observed_at"] > datetime.now(timezone.utc):
                     raise ValueError("invalid observation or release time")
                 if raw["variable"] in ("rain", "wind") and raw["observation"] < 0:
                     raise ValueError("negative observation")
                 if raw["variable"] == "rain" and (raw["window_end"] != raw["valid_time"] or raw["window_start"] != raw["valid_time"] - timedelta(hours=24)):
                     raise ValueError("rain requires exact 24 h window ending at valid_time")
+                if raw["variable"] != "rain" and (raw["window_start"] is not None or raw["window_end"] is not None):
+                    raise ValueError("instantaneous temperature/wind require empty accumulation windows")
+                raw["observation_support"] = raw.get("observation_support", "").strip() or "unknown"
+                if raw["observation_support"] not in ("station_point", "grid_cell", "area_average", "unknown"):
+                    raise ValueError("observation_support must be station_point, grid_cell, area_average, or unknown")
+                raw["representativeness_status"] = raw.get("representativeness_status", "").strip() or "unverified"
+                if raw["representativeness_status"] not in ("verified", "unverified"):
+                    raise ValueError("representativeness_status must be verified or unverified")
+                if raw["representativeness_status"] == "verified" and (raw["observation_support"] == "unknown" or not raw.get("representativeness_evidence", "").strip()):
+                    raise ValueError("verified representativeness requires known support and evidence")
                 key = (raw["region"], raw["variable"], raw["valid_time"])
                 if key in references:
                     raise ValueError("duplicate observation target")
@@ -266,12 +350,19 @@ def merge_observations(cases_path: Path, observations_path: Path, out: Path) -> 
             raise ValueError(f"Rain window mismatch for {row['region']} {row['valid_time']}")
         matched.append({**row, "observation": obs["observation"], "observed_at": obs["observed_at"],
                         "observation_source": obs["source"], "observation_quality": "pass",
+                        "unit": obs["unit"], "observation_support": obs["observation_support"],
+                        "units_verified": bool(obs["unit"]), "spatial_support_verified": obs["representativeness_status"] == "verified",
+                        "representativeness_status": obs["representativeness_status"],
+                        "representativeness_evidence": obs.get("representativeness_evidence", ""),
+                        "release_time_basis": obs.get("release_time_basis", "") or "supplied by importer, not independently verified",
+                        "source_url": obs.get("source_url", ""),
                         "window_start": obs["window_start"] or "", "window_end": obs["window_end"] or ""})
     if not matched:
         raise ValueError("No observations matched forecast location, variable, and valid time")
     out.mkdir(parents=True, exist_ok=True)
     write_cases(out / "cases.csv", matched)
     sources = sorted({r["observation_source"] for r in matched})
+    latencies = [(row["observed_at"] - row["valid_time"]).total_seconds() / 3600 for row in matched]
     manifest = {"kind": "quality_checked_observations", "truth": ", ".join(sources),
                 "availability": "Observation release times supplied in CSV; historical model publication times remain unverified",
                 "spatial_caveat": "Nearby point or station observations may differ from model grid-cell averages; verify representativeness",
@@ -279,5 +370,12 @@ def merge_observations(cases_path: Path, observations_path: Path, out: Path) -> 
                 "rain_window": "exact 24 h intervals from observation CSV",
                 "cases_sha256": hashlib.sha256((out / "cases.csv").read_bytes()).hexdigest(),
                 "source_observations_sha256": hashlib.sha256(observations_path.read_bytes()).hexdigest()}
+    manifest["observation_latency_hours"] = {"min": min(latencies), "median": statistics.median(latencies), "max": max(latencies), "basis": "supplied release times"}
+    manifest["spatial_representativeness"] = "verified with supplied evidence" if all(row["representativeness_status"] == "verified" for row in matched) else "unverified"
+    manifest["unverified_support_cases"] = sum(row["representativeness_status"] != "verified" for row in matched)
+    manifest["observation_support"] = sorted({row["observation_support"] for row in matched})
+    manifest["units_verified"] = all(row["units_verified"] for row in matched)
+    manifest["spatial_support_verified"] = all(row["spatial_support_verified"] for row in matched)
+    manifest["latency_manifest"] = manifest["observation_latency_hours"]
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest

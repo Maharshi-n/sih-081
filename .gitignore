@@ -9,3 +9,5 @@ output/*
 !output/issued/
 output/issued/*
 !output/issued/latest.json
+!output/issued/source_payloads/
+!output/issued/source_payloads/**

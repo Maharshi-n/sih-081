@@ -67,6 +67,7 @@
     .actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:0 0 16px}.actions span{font-size:12px;color:#75898c}
     .evidence{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.evidence .card{padding:20px 22px}.evidence p{font-size:12px;color:#71898f;line-height:1.5}
     .reliability svg{width:100%;max-height:210px}.small-table{min-width:0}.small-table th,.small-table td{text-align:left!important}
+    .factor{display:grid;grid-template-columns:1fr auto;gap:5px 15px;padding:11px 0;border-bottom:1px solid #edf1f0;font-size:12px}.factor p{grid-column:1/-1;margin:0}.factor:last-child{border:0}.explanation{padding-left:18px;color:#647b72;font-size:12px;line-height:1.6}.confidence-value{font-size:28px;font-weight:700;margin:12px 0 6px;color:#244f42}.table-scroll{overflow:auto}.coverage-note{color:#61776c;font-size:12px;line-height:1.5;margin:0 0 19px}.ablation-table{min-width:860px}.gate-note{white-space:normal;min-width:210px;max-width:420px;text-align:left!important;line-height:1.5}
     @media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid #e4eae3}.main-grid{grid-template-columns:1fr}.map{height:250px}}
     @media(max-width:700px){.shell{display:block}aside{position:relative;height:auto;padding:18px 20px}.brand{font-size:19px}.nav-title,.side-note{display:none}aside nav{display:flex;gap:5px;overflow:auto;margin-top:17px}aside nav a{white-space:nowrap;font-size:12px;padding:8px 10px}main{padding:22px 16px 45px}.topline span:last-child{display:none}.stats,.wide-grid{grid-template-columns:1fr 1fr}.value{font-size:24px}.toolbar select{min-width:0;width:100%}.toolbar>div{flex:1 1 44%}.wide-grid,.evidence{grid-template-columns:1fr}.data-note{display:block}.data-note strong{display:block;margin-bottom:4px}}
     @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}aside nav a,.action{transition:none}}
@@ -86,6 +87,7 @@
     <h1>Forecast overview</h1>
     <p class="subtitle">Review the forecast, source contributions and past performance for each location.</p>
     <div class="data-note" id="warning" role="status"><strong>Data source</strong><span>Loading forecast data</span></div>
+    <p class="coverage-note" id="coverageNote"></p>
     <div class="toolbar">
       <div><label for="variable">Variable</label><select id="variable"></select></div>
       <div><label for="lead">Lead</label><select id="lead"></select></div>
@@ -97,8 +99,8 @@
     </div>
     <div class="actions"><button class="action" id="reveal" type="button" aria-pressed="false">Reveal observation</button><button class="action" id="heavyCase" type="button">Highest observed event</button><button class="action" id="ordinaryCase" type="button">Ordinary day</button><span>The observation stays hidden until you reveal it.</span></div>
     <div class="grid stats">
-      <div class="card stat"><div class="eyebrow">Blend forecast</div><div class="value" id="statForecast">…</div><div class="subvalue" id="statForecastSub"></div></div>
-      <div class="card stat"><div class="eyebrow">Hazard probability</div><div class="value" id="statHazard">…</div><div class="subvalue" id="statHazardSub"></div></div>
+      <div class="card stat"><div class="eyebrow">Selected forecast</div><div class="value" id="statForecast">…</div><div class="subvalue" id="statForecastSub"></div></div>
+      <div class="card stat"><div class="eyebrow">Historical hazard estimate</div><div class="value" id="statHazard">…</div><div class="subvalue" id="statHazardSub"></div></div>
       <div class="card stat"><div class="eyebrow">Test period point MAE</div><div class="value" id="statMae">…</div><div class="subvalue" id="statMaeSub"></div></div>
       <div class="card stat"><div class="eyebrow">Test cases</div><div class="value" id="statCases">…</div><div class="subvalue" id="statCasesSub"></div></div>
     </div>
@@ -110,9 +112,13 @@
       <section class="card weights" id="contributions"><h2 id="weightTitle">Point forecast contributions</h2><div id="weightRows"></div><div class="weight-note" id="weightNote">These are the selected point method's actual weights.</div></section>
       <section class="card" aria-labelledby="historyTitle"><div class="section-head"><div><h2 id="historyTitle">Recent test cases</h2><p>Forecast and observed values at this location</p></div></div><div class="chart" id="historyChart"></div><div class="map-legend"><span><i class="legend-dot" style="background:#16837a"></i>Blend</span><span id="observedLegend" hidden><i class="legend-dot" style="background:#d5944f"></i>Observed</span></div></section>
     </div>
+    <div class="evidence"><section class="card"><h2>Confidence evidence</h2><div class="confidence-value" id="confidenceScore">Not assessed</div><p id="confidenceNote">This experimental index is not a weather probability.</p><div id="confidenceFactors"></div><ul class="explanation" id="confidenceDrivers"></ul></section><section class="card"><h2>Why these weights?</h2><p id="routerNote"></p><div id="routerRows"></div><p id="disagreementNote"></p></section></div>
     <div class="evidence"><section class="card" id="sourcePanel"><h2>Forecast source status</h2><p id="sourceStatusNote"></p><table class="small-table"><thead><tr><th>Source</th><th>Forecast</th><th>Contribution</th><th>Availability</th></tr></thead><tbody id="sourceRows"></tbody></table></section><section class="card reliability" id="reliabilityPanel"><h2>Hazard reliability</h2><p id="reliabilityNote"></p><div id="reliabilityChart"></div></section></div>
-    <details class="card table-card" id="issued" hidden><summary>Latest issued guidance</summary><p id="issuedNote"></p><p id="issuedTiming"></p><table><thead><tr><th>Region</th><th>Product</th><th>Lead</th><th>Point</th><th>Hazard chance</th><th>Status</th><th>Reason</th></tr></thead><tbody id="issuedRows"></tbody></table></details>
+    <details class="card table-card" id="issued" hidden><summary>Latest issued guidance</summary><p id="issuedNote"></p><p id="issuedTiming"></p><table><thead><tr><th>Region</th><th>Product</th><th>Lead</th><th>Point</th><th>Hazard chance</th><th>Freshness at issuance</th><th>Status and reason</th></tr></thead><tbody id="issuedRows"></tbody></table></details>
     <section class="card table-card" id="verification"><h2>Forecast verification</h2><p id="verificationNote">Methods were selected on a separate validation period.</p><table><thead><tr><th>Point method</th><th>Cases</th><th>MAE</th><th>RMSE</th><th>Bias</th></tr></thead><tbody id="scoreRows"></tbody></table><p id="probabilityScores"></p></section>
+    <section class="card table-card"><h2>Method comparison</h2><p id="ablationNote"></p><table class="ablation-table"><thead><tr><th>Method</th><th>Cases</th><th>MAE</th><th>RMSE</th><th>Bias</th><th>Probability RPS</th><th>Brier score</th><th>Events</th><th>Reliability gap</th><th>Detection</th><th>False alarm rate</th></tr></thead><tbody id="ablationRows"></tbody></table></section>
+    <section class="card table-card"><h2>Event evidence and publication checks</h2><p id="eventNote"></p><table class="ablation-table"><thead><tr><th>Event / period</th><th>Cases</th><th>Events</th><th>Brier score</th><th>Skill vs climatology</th><th>Detection</th><th>False alarm rate</th><th>Publication check</th></tr></thead><tbody id="eventRows"></tbody></table></section>
+    <section class="card table-card"><h2>Does higher confidence mean smaller errors?</h2><p id="confidenceTestNote"></p><table><thead><tr><th>Evidence index</th><th>Development cases</th><th>Development MAE</th><th>Test cases</th><th>Test MAE</th></tr></thead><tbody id="confidenceTestRows"></tbody></table></section>
     <section class="card table-card"><h2>Guidance scope</h2><p id="targetNote"></p></section>
     <section class="card status" id="provenance"><div><strong id="sourceKind">…</strong><br><span id="sourceTruth">…</span></div><div id="sourceSplit">…</div></section>
   </main>
@@ -123,8 +129,8 @@ const $=id=>document.getElementById(id);
 const colors={IFS:'#16837a',GFS:'#d5944f',AIFS:'#6678ad'};
 const names={temperature:'Temperature',wind:'10 m wind',rain:'24 h rainfall'};
 const hazardCopy=s=>s.replaceAll('reporting-day','reporting day').replaceAll('heat-wave','heat wave').replaceAll('(research guidance)','(for review)');
-const methodName=s=>({equal:'Equal blend',fixed:'Fixed blend',adaptive:'Adaptive blend'})[s]||s.replace('_corrected',' adjusted');
-const probabilityName=s=>s==='pbc'?'PBC':'Raw probability';
+const methodName=s=>({equal:'Equal blend',fixed:'Fixed blend',adaptive:'Contextual blend',router:'Forecast router'})[s]||String(s||'Method not recorded').replace('_corrected',' adjusted');
+const probabilityName=s=>({raw:'Contextual empirical',equal_raw:'Equal empirical',fixed_raw:'Fixed empirical',pbc:'Contextual + PBC',router_raw:'Router empirical',router_pbc:'Router + PBC',two_part:'Dry / wet rainfall',debias:'Bias correction',persistence:'Persistence correction'})[s]||'Probability method not recorded';
 const countLabel=(n,word)=>`${n} ${Number(n)===1?word:word==='miss'?'misses':word+'s'}`;
 const istFormatter=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
 function istTime(s){
@@ -157,43 +163,84 @@ requestAnimationFrame(syncActiveNav);
 function fillSelect(id,items,label){const el=$(id),old=el.value;el.replaceChildren();items.forEach(x=>addOption(el,x,label?label(x):x));if(items.includes(old))el.value=old}
 function selection(){
   let rows=state.cases;
-  fillSelect('variable',unique(rows.map(x=>x.variable)),x=>names[x]);rows=rows.filter(x=>x.variable===$('variable').value);
+  fillSelect('variable',unique(rows.map(x=>x.variable)).sort((a,b)=>(a==='rain'?-1:b==='rain'?1:a.localeCompare(b))),x=>names[x]);rows=rows.filter(x=>x.variable===$('variable').value);
   fillSelect('lead',unique(rows.map(x=>String(x.lead_hours))),x=>leadLabel($('variable').value,x));rows=rows.filter(x=>String(x.lead_hours)===$('lead').value);
   fillSelect('region',unique(rows.map(x=>x.region)).sort());rows=rows.filter(x=>x.region===$('region').value);
   fillSelect('case',unique(rows.map(x=>x.issue_time)).reverse(),istTime);
   selected=rows.find(x=>x.issue_time===$('case').value)||rows[rows.length-1];revealed=false;render();
 }
 function outageReason(product,source){
-  const result=product.outages[source],unit=state.units[product.variable],failures=[];
-  for(const [name,score,limit] of [['Validation',result.validation,product.validation.point[product.point_method].mae*1.2],['Test',result.test,product.test.point.equal.mae*1.2]]){
-    if(score.n<15)failures.push(`${name} had ${score.n} cases; at least 15 are required.`);
-    if(score.mae>limit)failures.push(`${name} error was ${fmt(score.mae,3)} ${unit}, above the allowed ${fmt(limit,3)} ${unit}.`);
-  }
+  const result=product.outages?.[source],unit=state.units[product.variable],failures=[];
+  if(!result)return `No fallback assessment is recorded with ${source} removed.`;
+  const score=result.validation,limit=product.validation.point[product.point_method].mae*1.2;
+  if(score.n<15)failures.push(`Development had ${score.n} cases; at least 15 are required.`);
+  if(score.mae>limit)failures.push(`Development error was ${fmt(score.mae,3)} ${unit}, above the allowed ${fmt(limit,3)} ${unit}.`);
+  if(!failures.length)failures.push('The recorded fallback approval is not sufficient to publish this point forecast.');
   return `With ${source} removed, ${failures.join(' ')} Select All sources to restore the forecast.`;
 }
+const primaryEvent=product=>product.variable==='rain'?'heavy':'defined_event';
+const gateText=gate=>gate?.approved?'Passed the research publication checks.':(gate?.reasons?.join(' ')||'Publication checks are not recorded for this report.');
 function view(c){
   const drop=$('outage').value;
   if(drop==='all')return {point:c.point,probability:c.hazard_probability,weights:c.weights,probWeights:c.probability_weights,method:methodName(c.point_method)+' with '+probabilityName(c.probability_method)};
-  const product=state.results.find(x=>x.variable===c.variable&&x.lead_hours===c.lead_hours),result=product.outages[drop];
-  const probabilityReason=`A probability model without ${drop} has not been validated. Select All sources to see the historical probability estimate.`;
-  if(!result.approved)return {point:null,probability:null,weights:{},probWeights:{},method:'Fallback withheld',pointReason:outageReason(product,drop),probabilityReason};
+  const product=state.results.find(x=>x.variable===c.variable&&x.lead_hours===c.lead_hours),result=product.outages?.[drop];
   const remaining=Object.keys(c.sources).filter(s=>s!==drop&&c.sources[s]!=null),weights={};remaining.forEach(s=>weights[s]=1/remaining.length);
-  return {point:c.outage_points[drop],probability:null,weights,probWeights:{},method:'Equal weight point fallback; '+drop+' missing',probabilityReason};
+  const gate=result?.event_approval?.[primaryEvent(product)],approved=Boolean(gate?.approved),probability=approved?c.outage_probabilities?.[drop]:null;
+  return {point:result?.approved?c.outage_points?.[drop]:null,probability:probability??null,
+          weights:result?.approved?weights:{},probWeights:probability!=null?c.outage_weights?.[drop]||{}:{},
+          method:result?.approved?'Equal point fallback; '+drop+' missing':'Point fallback withheld',
+          pointReason:result?.approved?'':outageReason(product,drop),
+          probabilityReason:probability!=null?'':`Without ${drop}: ${gateText(gate)}${approved?' No probability is recorded for this case.':''}`};
 }
 function issuedReason(item,product){
-  if(item.hazard_probability==null&&item.reason?.includes('fewer than 10 validation events')){
-    const n=product?.validation?.probability?.raw?.events;
-    return `Hazard chance withheld: ${n??'Fewer than 10'} validation events; at least 10 are required.`;
-  }
   const reasons={
     'insufficient released historical cases':'Fewer than 30 matching historical cases were available by issue time.',
     'probability fallback unvalidated':'Point fallback used. A probability model for the remaining sources has not been validated.',
     'input subset has no approved fallback':`Missing ${item.missing_sources?.join(', ')||'model inputs'}. The remaining sources have no approved fallback.`,
     'insufficient probability training history':'Point forecast issued. Too few historical cases to estimate a hazard probability.'
   };
+  if(item.point==null&&item.reason)return reasons[item.reason]||item.reason;
+  const eventReasons=item.event_reasons?.[primaryEvent(product||item)];
+  if(item.hazard_probability==null&&eventReasons?.length)return 'Hazard chance withheld. '+eventReasons.join(' ');
+  const recorded=item.event_approval?.[primaryEvent(product||item)]||item.event_gates?.[primaryEvent(product||item)];
+  if(item.hazard_probability==null&&recorded)return `Hazard chance withheld. ${gateText(recorded)}`;
+  if(item.hazard_probability==null&&item.reason?.includes('fewer than 10 validation events'))return `This older issued record withheld hazard chance under its previous evidence policy. ${gateText(product?.event_approval?.[primaryEvent(product||item)])}`;
   if(item.reason)return reasons[item.reason]||item.reason;
   if(item.point==null)return `No forecast values received from ${item.missing_sources?.join(', ')||'the required models'}.`;
   return item.hazard_probability==null?'Hazard chance withheld; no validated probability is recorded.':'Forecast and hazard chance issued.';
+}
+function tableRows(id,rows){$(id).replaceChildren();rows.forEach(values=>{const tr=document.createElement('tr');values.forEach(value=>{const td=document.createElement('td');td.textContent=value??'Not recorded';tr.append(td)});$(id).append(tr)})}
+const percent=value=>Number.isFinite(value)?Math.round(value*100)+'%':'Not assessed';
+const factorLabels={agreement:'Model agreement',skill:'Historical error',evidence:'Relevant evidence',freshness:'Freshness and availability',similarity:'Similarity to past cases',reliability:'Probability reliability'};
+function featureLabel(name){return ({forecast_mean:'Forecast magnitude',disagreement_std:'Model spread',disagreement_range:'Model range',disagreement_relative:'Relative model spread',climatology_deviation:'Difference from past climate',history_dates:'Recent evidence dates',month_sin:'Seasonal timing',month_cos:'Seasonal timing'})[name]||String(name).replace(/^rolling_mae_/,'Recent error: ').replace(/^rolling_rps_/,'Recent probability error: ').replace(/^forecast_/,'Forecast: ').replace(/^difference_/,'Source difference: ').replace(/^region_/,'Region: ').replaceAll('_',' ')}
+function confidencePanels(c,r,unit,outage){
+  const confidence=outage==='all'?c.confidence:c.outage_confidence?.[outage];
+  $('confidenceScore').textContent=confidence?`${fmt(confidence.score,1)} / 100 · ${confidence.label}`:'Not assessed for this scenario';
+  $('confidenceNote').textContent='Experimental evidence index, not a weather probability or a guarantee of accuracy. Unknown factors contribute zero; the weights are not redistributed.';
+  $('confidenceFactors').replaceChildren();$('confidenceDrivers').replaceChildren();
+  for(const [name,factor] of Object.entries(confidence?.factors||{})){
+    const div=document.createElement('div');div.className='factor';
+    div.innerHTML=`<span>${escapeHtml(factorLabels[name]||name)}</span><strong>${percent(factor.value)} · ${percent(factor.weight)} weight</strong><p>${escapeHtml(factor.detail)}${factor.status!=='available'?' Evidence is limited.':''}</p>`;$('confidenceFactors').append(div);
+  }
+  (confidence?.drivers||[outage==='all'?'Confidence evidence was not stored in this older evaluation.':'The full-source confidence index does not apply to a missing-source scenario.']).forEach(reason=>{const li=document.createElement('li');li.textContent=reason.replace(/^(agreement|skill|evidence|freshness|similarity|reliability):/,(_,key)=>factorLabels[key]+':');$('confidenceDrivers').append(li)});
+  const development=r.confidence_evaluation?.validation,test=r.confidence_evaluation?.test;
+  tableRows('confidenceTestRows',(test?.bins||development?.bins||[]).map((b,i)=>[`${b.min_score} to ${Math.min(100,b.max_score_exclusive-1)}`,development?.bins?.[i]?.n??0,fmt(development?.bins?.[i]?.mae,3),test?.bins?.[i]?.n??0,fmt(test?.bins?.[i]?.mae,3)]));
+  $('confidenceTestNote').textContent=test?`These bins describe the all source selected point method. Errors are in ${unit}. Score / error rank association: development ${fmt(development?.score_error_rank_association,3)}, test ${fmt(test.score_error_rank_association,3)}. A negative value suggests higher scores accompanied smaller errors. These checks describe the fixed index; they do not validate it for operational use.`:'No confidence error comparison is recorded in this older evaluation.';
+  const explanation=c.router_explanation,spread=c.disagreement||confidence?.disagreement;
+  $('disagreementNote').textContent=spread?`Model spread: standard deviation ${fmt(spread.std,2)} ${unit}; range ${fmt(spread.range,2)} ${unit}. Agreement alone does not establish accuracy.`:'Model spread was not recorded.';
+  $('routerRows').replaceChildren();
+  if(outage!=='all'){$('routerNote').textContent='This scenario uses a separately checked point fallback. The full-source router weights do not apply.';return}
+  $('routerNote').textContent=`The selected point forecast uses ${methodName(c.point_method)}. ${c.point_method==='router'?'The router weights below are active.':'The router below is a competing candidate; its weights are not the selected point forecast.'} ${explanation?.reason||'Router explanations were not stored in this older report.'} ${explanation?`${Math.round((1-explanation.shrinkage)*100)}% of its weight comes from the baseline blend, with ${explanation.evidence_dates} released local issue dates.`:''}`;
+  for(const [source,weight] of Object.entries(c.router_weights||{})){
+    const div=document.createElement('div');div.className='factor';const error=explanation?.predicted_errors?.[source];
+    const drivers=(explanation?.drivers?.[source]||[]).map(d=>`${featureLabel(d.feature)} ${d.error_contribution>=0?'raises':'lowers'} the learned expected error by ${fmt(Math.abs(d.error_contribution),3)} ${unit}`).join('; ');
+    div.innerHTML=`<span>${escapeHtml(source)} ${percent(weight)}</span><strong>${error==null?'Baseline fallback':`Expected error ${fmt(error,3)} ${unit}`}</strong><p>${escapeHtml(drivers||'Not enough local training evidence to explain a learned adjustment.')}</p>`;$('routerRows').append(div);
+  }
+}
+function freshnessText(info){
+  const freshness=info?.freshness||{},status=freshness.status||info?.freshness_status;
+  const availability=info?.status==='unavailable'?'Source unavailable; ':'';
+  return availability+(status?`${status}${Number.isFinite(freshness.age_hours)?` (${fmt(freshness.age_hours,1)} h since model run)`:''}${info?.reason||freshness.reason?': '+(info.reason||freshness.reason):''}`:'Run age not recorded');
 }
 function mapHtml(cases){
   const seen=new Map();cases.forEach(c=>seen.set(c.region,c));
@@ -202,12 +249,12 @@ function mapHtml(cases){
   const markers=[...seen.values()].map(c=>{
     const v=view(c),w=$('weightMode').value==='probability'?v.probWeights:v.weights,source=Object.keys(w||{}).sort((a,b)=>w[b]-w[a])[0];
     const x=35+(c.longitude-minLon)/(maxLon-minLon)*295,y=207-(c.latitude-minLat)/(maxLat-minLat)*165;
-    return `<g><circle cx="${x}" cy="${y}" r="11" fill="${colors[source]||'#91a4a5'}" opacity=".18"/><circle cx="${x}" cy="${y}" r="5.5" fill="${colors[source]||'#91a4a5'}" stroke="white" stroke-width="2"/><text x="${x+12}" y="${y+4}" fill="#31545c" font-size="11" font-weight="700">${escapeHtml(c.region)}</text></g>`
+    return `<g><circle cx="${x}" cy="${y}" r="11" fill="${colors[source]||'#91a4a5'}" opacity=".18"/><circle cx="${x}" cy="${y}" r="5.5" fill="${colors[source]||'#91a4a5'}" stroke="white" stroke-width="2"/><text x="${x>260?x-12:x+12}" y="${y+4}" text-anchor="${x>260?'end':'start'}" fill="#31545c" font-size="11" font-weight="700">${escapeHtml(c.region)}</text></g>`
   }).join('');
   return `<svg viewBox="0 0 380 245" role="img" aria-label="Locations positioned by latitude and longitude, colored by dominant model source"><rect width="380" height="245" rx="8" fill="#f8fbf9"/><path d="M35 42H330M35 97H330M35 152H330M35 207H330M35 42V207M133 42V207M231 42V207M330 42V207" fill="none" stroke="#e2ebe7"/><text x="35" y="231" fill="#8aa09d" font-size="10">${minLon.toFixed(1)}°E</text><text x="299" y="231" fill="#8aa09d" font-size="10">${maxLon.toFixed(1)}°E</text><text x="340" y="49" fill="#8aa09d" font-size="10">N</text>${markers}</svg>`
 }
 function chartHtml(cases){
-  const tail=cases.slice(-12);if(tail.length<2)return '<div class="empty">More cases needed</div>';
+  const tail=cases.slice(-12).map(c=>({...c,point:view(c).point})).filter(c=>Number.isFinite(c.point));if(tail.length<2)return '<div class="empty">Not enough usable forecasts for this scenario</div>';
   const all=tail.flatMap(c=>revealed?[c.point,c.observation]:[c.point]),min=Math.min(...all),max=Math.max(...all),span=max-min||1;
   const path=key=>tail.map((c,i)=>`${i?'L':'M'}${24+i*27},${125-((c[key]-min)/span)*100}`).join(' ');
   return `<svg viewBox="0 0 345 145" role="img" aria-label="Recent forecasts ${revealed?'compared with observations':'with observations hidden'}"><line x1="24" y1="125" x2="330" y2="125" stroke="#dce6e3"/><line x1="24" y1="25" x2="330" y2="25" stroke="#ecf1ef"/><path d="${path('point')}" fill="none" stroke="#16837a" stroke-width="3" stroke-linejoin="round"/>${revealed?`<path d="${path('observation')}" fill="none" stroke="#d5944f" stroke-width="2.5" stroke-linejoin="round"/>`:''}</svg>`
@@ -220,16 +267,19 @@ function reliabilityHtml(bins){
 function render(){
   if(!selected)return;const c=selected,r=state.results.find(x=>x.variable===c.variable&&x.lead_hours===c.lead_hours),unit=state.units[c.variable],v=view(c),outage=$('outage').value;
   $('statForecast').textContent=v.point==null?'Withheld':fmt(v.point)+' '+unit;$('statForecastSub').textContent=v.pointReason||v.method;
-  $('statHazard').textContent=v.probability==null?'Not validated':Math.round(v.probability*100)+'%';$('statHazardSub').textContent=v.probabilityReason||(r.hazard_status==='candidate tested'?hazardCopy(r.hazard):`For review only: ${countLabel(r.validation.probability.raw.events,'validation event')}; at least 10 are required for issuance.`);
+  const eventName=primaryEvent(r),eventApproval=outage==='all'?r.event_approval:r.outages?.[outage]?.event_approval,gate=eventApproval?.[eventName];
+  $('statHazard').textContent=v.probability==null?'Withheld':Math.round(v.probability*100)+'%';$('statHazardSub').textContent=v.probabilityReason||`Historical estimate for review. ${gate?.approved?'Research publication checks passed.':'Issued hazard chance remains withheld.'}`;
   $('statMae').textContent=fmt(outage==='all'?r.test.point[c.point_method].mae:r.outages[outage].test.mae,2)+' '+unit;$('statMaeSub').textContent='Chronological test period';
-  $('statCases').textContent=r.test_n;$('statCasesSub').textContent=countLabel(r.test.probability[c.probability_method].events,'observed hazard event');
+  const ps=outage==='all'?r.test.probability[c.probability_method]:r.outages?.[outage]?.probability_test,valid=outage==='all'?r.validation.probability[c.probability_method]:r.outages?.[outage]?.probability_validation;
+  $('statCases').textContent=ps?.n??r.test_n;$('statCasesSub').textContent=countLabel(ps?.events??0,'observed hazard event');
   $('detailRegion').textContent=c.region;$('detailTime').textContent='Valid '+istTime(c.valid_time);
   $('detailForecast').innerHTML=v.point==null?'Withheld':fmt(v.point)+' <small>'+unit+'</small>';$('detailObserved').textContent=revealed?fmt(c.observation)+' '+unit:'Hidden for replay';
   $('detailReason').hidden=!v.pointReason;$('detailReason').textContent=v.pointReason||'';
   $('reveal').textContent=revealed?'Hide observation':'Reveal observation';$('reveal').setAttribute('aria-pressed',String(revealed));
   $('detailMethod').textContent=v.method;$('probFill').style.width=((v.probability||0)*100)+'%';
   $('probName').textContent=hazardCopy(r.hazard);$('detailProb').textContent=v.probability==null?'Not validated':Math.round(v.probability*100)+'%';
-  $('probFill').parentElement.hidden=v.probability==null;$('probReason').hidden=!v.probabilityReason;$('probReason').textContent=v.probabilityReason||'';
+  const probabilityReason=v.probabilityReason||(!gate?.approved?'Historical estimate, not approved for issuance. '+gateText(gate):'');
+  $('probFill').parentElement.hidden=v.probability==null;$('probReason').hidden=!probabilityReason;$('probReason').textContent=probabilityReason;
   $('eventDetails').textContent=c.variable==='rain'&&outage==='all'?Object.entries(c.event_probabilities||{}).map(([name,p])=>`${name.replaceAll('_',' ')} ${Math.round(p*100)}% with ${countLabel(r.event_scores?.test?.[name]?.events??0,'test event')}`).join(' | '):'';
   const peers=state.cases.filter(x=>x.variable===c.variable&&x.lead_hours===c.lead_hours&&x.issue_time===c.issue_time);
   $('map').innerHTML=mapHtml(peers);$('mapLegend').innerHTML=Object.entries(colors).map(([s,color])=>`<span><i class="legend-dot" style="background:${color}"></i>${s}</span>`).join('');
@@ -241,15 +291,23 @@ function render(){
   $('historyChart').innerHTML=chartHtml(history);$('observedLegend').hidden=!revealed;
   $('sourceStatusNote').textContent=`Model run: ${istTime(c.issue_time)}. ${c.variable==='rain'?('Rain is summed over the 24 hours ending at '+(state.manifest?.rain_window?.includes('03:00 UTC')?'08:30 IST.':'the selected valid time.')):('Instantaneous '+names[c.variable].toLowerCase()+'.')} Original publication time is unverified.`;
   $('sourceRows').replaceChildren();Object.keys(colors).forEach(s=>{const tr=document.createElement('tr'),contribution=shownWeights?.[s]||0;[s,c.sources[s]==null?'Not received':fmt(c.sources[s])+' '+unit,Object.keys(shownWeights||{}).length?Math.round(contribution*100)+'%':'Not assessed',c.sources[s]==null?`No archived ${s} value for this case`:outage===s?'Excluded for this simulation':'Run archived; publication unverified'].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td)});$('sourceRows').append(tr)});
-  const ps=r.test.probability[c.probability_method],valid=r.validation.probability[c.probability_method];
-  $('reliabilityNote').textContent=`${countLabel(ps.n,'test case')} and ${countLabel(ps.events,'observed event')}. Validation had ${countLabel(valid.events,'event')}. Brier score ${fmt(ps.brier,4)}. At 50%: ${countLabel(ps.threshold_50?.hits??0,'hit')}, ${countLabel(ps.threshold_50?.misses??0,'miss')} and ${countLabel(ps.threshold_50?.false_alarms??0,'false alarm')}. ${r.hazard_status==='candidate tested'?'Candidate tested.':'Too few validation events for issued hazard guidance.'}`;
-  $('reliabilityChart').innerHTML=reliabilityHtml(ps.reliability);
-  $('probabilityScores').textContent=`Probability RPS: raw ${fmt(r.test.probability.raw.rps,5)} · Debias++ ${fmt(r.test.probability.debias?.rps,5)} · Persistence++ ${fmt(r.test.probability.persistence?.rps,5)} · combined PBC ${fmt(r.test.probability.pbc.rps,5)}. PBC is active only when its validation rule passes.`;
-  if(issuedState){const record=issuedState.records.find(x=>x.region===c.region&&x.variable===c.variable&&x.lead_hours===c.lead_hours);$('issuedTiming').textContent=record?`Source retrieval times: ${Object.entries(record.source_status||{}).map(([name,info])=>name+' '+istTime(info.retrieved_at)).join(', ')}. Original publication times are unverified.`:''}
+  $('reliabilityNote').textContent=ps?`${countLabel(ps.n,'test case')} and ${countLabel(ps.events,'observed event')}. Development had ${countLabel(valid?.events??0,'event')}. Brier score ${fmt(ps.brier,4)}. At 50%: ${countLabel(ps.threshold_50?.hits??0,'hit')}, ${countLabel(ps.threshold_50?.misses??0,'miss')} and ${countLabel(ps.threshold_50?.false_alarms??0,'false alarm')}. ${gateText(gate)}`:'No separately evaluated probability reliability is recorded for this source scenario.';
+  $('reliabilityChart').innerHTML=reliabilityHtml(ps?.reliability);
+  $('probabilityScores').textContent=Object.entries(r.test.probability).map(([name,score])=>`${probabilityName(name)} RPS ${fmt(score.rps,5)}`).join(' · ')+'. Probability correction does not change the point forecast.';
+  if(issuedState){const record=issuedState.records.find(x=>x.region===c.region&&x.variable===c.variable&&x.lead_hours===c.lead_hours);$('issuedTiming').textContent=record?`Selected location and product: ${Object.entries(record.source_status||{}).map(([name,info])=>name+' '+freshnessText(info)+'; retrieved '+istTime(info.retrieved_at)).join('. ')}. Download time does not reset model run age.`:''}
   const ci=r.paired_uncertainty.point_vs_equal;
-  const decisionNote=r.deployment_note.startsWith('Held-out')?'A new test period is needed before making final skill claims.':'The selection passed the test period check.';
-  $('verificationNote').textContent=outage==='all'?`Validation selected ${methodName(r.point_method)} and ${probabilityName(r.probability_method)}. Issuance uses ${methodName(r.deployment_point_method)} and ${probabilityName(r.deployment_probability_method)}. Test MAE difference from equal weighting: ${fmt(ci.difference,3)} (95% interval ${fmt(ci.low,3)} to ${fmt(ci.high,3)}). ${decisionNote}`:`${outage} removed. Equal weight point fallback ${r.outages[outage].approved?'passed':'failed'} validation and test checks. Test MAE ${fmt(r.outages[outage].test.mae,3)}. No approved event probability fallback.`;
+  const decisionNote=r.selection_basis==='development only'?'Methods were frozen from development data. Final test scores are reporting only; '+(r.fresh_test_calendar?'the test calendar is marked unreviewed.':'previously reviewed or unverified test dates cannot support fresh skill claims.'):'This older report used its previous selection policy. Re-evaluate with the current development-only policy.';
+  $('verificationNote').textContent=outage==='all'?`Development selected ${methodName(r.point_method)} and ${probabilityName(r.probability_method)}. Test MAE difference from equal weighting: ${fmt(ci?.difference,3)} (95% interval ${fmt(ci?.low,3)} to ${fmt(ci?.high,3)}). ${decisionNote}`:`${outage} removed. Equal point fallback ${r.outages?.[outage]?.approved?'passed':'failed'} development checks. Test MAE ${fmt(r.outages?.[outage]?.test?.mae,3)} ${unit} is reported separately. Hazard publication has its own event evidence checks.`;
   $('scoreRows').replaceChildren();Object.entries(r.test.point).forEach(([name,v])=>{let tr=document.createElement('tr');if(name===c.point_method)tr.className='selected';[methodName(name),v.n,fmt(v.mae,3),fmt(v.rmse,3),fmt(v.bias,3)].forEach(t=>{let td=document.createElement('td');td.textContent=t;tr.append(td)});$('scoreRows').append(tr)});
+  $('ablationNote').textContent=(r.common_case_policy||'Comparison policy is not recorded.')+'. All rows below refer to the full-source test scenario. Point error is in '+unit+'. Router + PBC shares the router point forecast; PBC changes probabilities only.';
+  tableRows('ablationRows',(r.ablation||[]).map(row=>{const event=row.events?.[eventName];return [row.method,row.probability?.n??row.point?.n??0,fmt(row.point?.mae,3),fmt(row.point?.rmse,3),fmt(row.point?.bias,3),fmt(row.probability?.rps,5),fmt(row.probability?.brier,5),row.probability?.events??0,percent(event?.ece),percent(event?.detection_rate),percent(event?.false_alarm_rate)]}));
+  const eventScores=outage==='all'?r.event_scores:r.outages?.[outage]?.event_scores,eventRows=[];
+  for(const name of unique([...Object.keys(eventScores?.validation||{}),...Object.keys(eventApproval||{})])){
+    for(const period of ['validation','test']){const score=eventScores?.[period]?.[name]||{};eventRows.push([`${name.replaceAll('_',' ')} / ${period==='validation'?'development':'test'}`,score.n??0,score.events??0,fmt(score.brier,5),percent(score.brier_skill),percent(score.detection_rate),percent(score.false_alarm_rate),gateText(eventApproval?.[name])])}
+  }
+  tableRows('eventRows',eventRows);for(const tr of $('eventRows').children)tr.children[7].className='gate-note';
+  $('eventNote').textContent=`${outage==='all'?'All-source product':'Product without '+outage}. Each event is checked independently. Event counts alone cannot approve guidance; reference quality, unseen test dates, probability skill and reliability also matter.`;
+  confidencePanels(c,r,unit,outage);
 }
 async function init(){try{const response=await fetch('/api/state');if(!response.ok)throw new Error('No evaluation could be loaded. Fetch and evaluate archived forecasts, then reload this page.');state=await response.json();
   if(state.data_kind==='synthetic_demo')throw new Error('The loaded evaluation contains generated sample data. Fetch and evaluate archived forecasts before using this dashboard.');
@@ -257,12 +315,14 @@ async function init(){try{const response=await fetch('/api/state');if(!response.
   $('warning').querySelector('span').textContent=state.data_kind==='retrospective_reanalysis'?'IFS, GFS and AIFS are archived model forecasts. ERA5 reanalysis is the comparison reference, not station observations. Original model publication times are unverified.':`${state.truth}. ${state.limitations}.`;
   $('sourceKind').textContent=({synthetic_demo:'Sample data',retrospective_reanalysis:'Reanalysis reference',quality_checked_observations:'Checked observations'})[state.data_kind]||'External observations';$('sourceTruth').textContent=state.data_kind==='retrospective_reanalysis'?'ERA5 reanalysis':state.truth;
   $('sourceSplit').textContent=`Training before ${istTime(state.split.train_before)} · Validation before ${istTime(state.split.validation_before)} · Test from ${istTime(state.split.test_from)}`;
-  $('targetNote').textContent='Rain thresholds are 64.5, 115.6 and 204.5 mm in 24 hours. Heat wave declarations need daily maxima, local normals and persistence data. Gust guidance needs gust forecasts and observations. Issued probabilities also need enough observed events.';
+  const regions=state.coverage?.regions||unique(state.cases.map(c=>c.region)).sort();
+  $('coverageNote').textContent=`${countLabel(regions.length,'evaluated location')}: ${regions.join(', ')}. ${state.coverage?`${state.coverage.issue_dates} issue dates; ${state.coverage.seasons.join(', ')}. `:''}Regional learning is pooled when local evidence is sparse. Coverage does not establish skill across every region or season.`;
+  $('targetNote').textContent='Rain is the main demonstration, using 24 hour totals with thresholds at 64.5, 115.6 and 204.5 mm. Dry means less than 0.1 mm in the two-part candidate. Station observation quality, exact reporting windows, spatial support, event evidence and reliability must pass before hazard probabilities are issued. Heat wave declarations need daily maxima, local normals and persistence data. Gust guidance needs gust forecasts and observations.';
   ['variable','lead','region','case'].forEach(id=>$(id).addEventListener('change',selection));['outage','weightMode'].forEach(id=>$(id).addEventListener('change',render));
   $('reveal').addEventListener('click',()=>{revealed=!revealed;render()});
   for(const [id,highest] of [['heavyCase',true],['ordinaryCase',false]])$(id).addEventListener('click',()=>{const peers=state.cases.filter(x=>x.variable===$('variable').value&&String(x.lead_hours)===$('lead').value&&x.region===$('region').value);if(!peers.length)return;const target=[...peers].sort((a,b)=>highest?b.observation-a.observation:a.observation-b.observation)[0];$('case').value=target.issue_time;selection()});
   selection();
-  const issuedResponse=await fetch('/api/issued');if(issuedResponse.ok){issuedState=await issuedResponse.json();const issued=issuedState;$('issued').hidden=false;$('issuedNote').textContent=`Forecast run ${istTime(issued.run_initialized_at)}. Created ${istTime(issued.generated_at)}. Source publication times are unverified. For review only.`;$('issuedRows').replaceChildren();issued.records.forEach(item=>{const tr=document.createElement('tr'),product=state.results.find(r=>r.variable===item.variable&&r.lead_hours===item.lead_hours);[item.region,names[item.variable],leadLabel(item.variable,item.lead_hours),item.point==null?'Withheld':fmt(item.point)+' '+state.units[item.variable],item.hazard_probability==null?'Withheld':Math.round(item.hazard_probability*100)+'%',item.status==='point only'?'Point forecast only':item.status,issuedReason(item,product)].forEach((value,index)=>{const td=document.createElement('td');td.textContent=value;if(index===6)td.className='reason-cell';tr.append(td)});$('issuedRows').append(tr)});render()}
+  const issuedResponse=await fetch('/api/issued');if(issuedResponse.ok){issuedState=await issuedResponse.json();const issued=issuedState;$('issued').hidden=false;$('issuedNote').textContent=`${issued.kind==='retrospective_replay'?'Historical replay, not a live forecast.':'Run-specific research forecast.'} Model run ${istTime(issued.run_initialized_at)}. Created ${istTime(issued.generated_at)}. Freshness assessed ${istTime(issued.as_of||issued.generated_at)}; these stored ages are not a current clock. Original source publication times are unverified.`;$('issuedRows').replaceChildren();issued.records.forEach(item=>{const tr=document.createElement('tr'),product=state.results.find(r=>r.variable===item.variable&&r.lead_hours===item.lead_hours);[item.region,names[item.variable],leadLabel(item.variable,item.lead_hours),item.point==null?'Withheld':fmt(item.point)+' '+state.units[item.variable],item.hazard_probability==null?'Withheld':Math.round(item.hazard_probability*100)+'%',Object.entries(item.source_status||{}).map(([s,info])=>s+': '+freshnessText(info)).join('; '),(item.status==='point only'?'Point forecast only':item.status)+'. '+issuedReason(item,product)].forEach((value,index)=>{const td=document.createElement('td');td.textContent=value;if(index>=5)td.className='reason-cell';tr.append(td)});$('issuedRows').append(tr)});render()}
 }catch(e){$('warning').querySelector('strong').textContent='Data unavailable';$('warning').querySelector('span').textContent=e.message}}
 init();
 </script>

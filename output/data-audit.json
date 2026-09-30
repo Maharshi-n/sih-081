@@ -1,17 +1,24 @@
 {
-  "checked_at": "2026-09-30T05:24:42.667724+00:00",
+  "checked_at": "2026-09-30T10:20:27.359854+00:00",
   "data_kind": "retrospective_reanalysis",
   "regions": [
     "Mumbai",
-    "Pune"
+    "Pune",
+    "Chennai",
+    "Bengaluru",
+    "Delhi"
   ],
-  "archive_cases": 1552,
-  "displayed_cases": 312,
-  "values_matched_to_cached_responses": 6200,
-  "missing_source_values": 8,
-  "raw_response_files_checked": 778,
-  "issued_records": 12,
-  "cases_sha256": "9a9e3e697cbd876efdbf5b300193485f41fd8017b5831ceec35e63268a00d691",
+  "archive_cases": 4930,
+  "values_matched_to_cached_responses": 19700,
+  "missing_source_values": 20,
+  "raw_response_files_checked": 2470,
+  "raw_response_hashes_checked": 2472,
+  "cases_sha256": "aa661714b06569f5e4cccd323926c0e78d3c437bddba07ca02528394e9a749c3",
   "reference": "Open-Meteo ERA5 reanalysis, not station observations",
-  "limits": "Checks saved downloads and provenance; not station observations or independent provider authentication."
+  "limits": "Checks saved downloads and provenance; ERA5 is not station observation or independent provider authentication.",
+  "displayed_cases": 990,
+  "issued_records": 30,
+  "issued_source_payloads_checked": 15,
+  "issued_source_values_checked": 90,
+  "issued_payload_verification": "checked"
 }

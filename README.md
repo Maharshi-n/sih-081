@@ -1,44 +1,70 @@
-# SIH26081 hybrid forecast blending pilot
+# Forecast blending and verification
 
-Run from the repository root with Python 3.11+ and NumPy:
-
-```powershell
-python -m pip install -r requirements.txt
-python -m sih081 serve
-```
-
-Open `http://127.0.0.1:8765` after fetching and evaluating real data, or use the existing evaluated archive. The dashboard refuses synthetic evaluations. `python -m sih081 demo` creates a separate **synthetic** report in `output/demo/state.json`; it does not replace the dashboard's `output/state.json`. Demo scores do not establish forecasting skill.
-
-The repository includes the Mumbai/Pune archive, cached API responses, evaluated state and latest issued snapshot. You can run the dashboard immediately after installing dependencies. These are saved historical results, not a live weather feed; use `refresh` to fetch a new run. Generated samples, older issue files and screenshots are excluded from Git. Snapshot files retain their exact bytes so the provenance hashes survive a clone.
-
-For archived IFS, GFS and AIFS forecasts compared with delayed ERA5 reanalysis:
+Compare real IFS, GFS and AIFS forecasts, select a method using chronological development data, and inspect its evidence in a local dashboard. Python 3.12 and NumPy are sufficient; the frontend uses plain HTML, CSS and JavaScript.
 
 ```powershell
-py -3.12 -m sih081 fetch --start 2026-04-10 --days 130 --regions Mumbai Pune --rain-window imd
-python -m sih081 evaluate data/archive/cases.csv --manifest data/archive/manifest.json
-python -m sih081 issue --run 2026-09-28T00:00 --regions Mumbai Pune
-python -m sih081 serve
+py -3.12 -m pip install -r requirements.txt
+py -3.12 -m sih081 serve
 ```
 
-The fetch command uses individual 00 UTC model runs. It caches raw forecast and ERA5 API responses and creates a matched CSV. Temperature and 10 m wind are point values at 24 and 72 hours. With the default `--rain-window imd`, the 24-hour rain accumulation ends at 03:00 UTC (08:30 IST), so actual forecast valid leads are **27 and 75 hours** from the 00 UTC run. `--rain-window utc` retains the older 00 UTC rain window. ERA5 is a **reanalysis reference**, not station truth. Archive run initialization is known; historical publication times are not verified. Avoid operational skill claims from this mode.
+Open http://127.0.0.1:8765. The saved archive, evaluated state, latest issued record and source responses are included. Displayed times use IST; storage and calculations use UTC. Saved records do not automatically become live weather when the page is opened.
 
-Run `py -3.12 scripts/check-real-data.py` to match archive values and displayed cases against cached model/ERA5 responses and check evaluation/issuance hashes. It writes `output/data-audit.json`. This checks local provenance; it does not authenticate the provider independently or turn reanalysis into station observations. Withheld dashboard results show their specific reason, including validation event counts and fallback accuracy limits. Missing-source options are explicitly labeled simulations.
+## What is implemented
 
-For prepared quality-checked observations, create a CSV with `region,latitude,longitude,variable,valid_time,observation,observed_at,source,quality,window_start,window_end`. Use UTC ISO timestamps with an explicit offset, `quality=pass`, and exact spatial coordinates (within 0.01° of the forecast target). Rain needs `window_start` exactly 24 hours before `window_end=valid_time`; leave both blank for instantaneous temperature/wind. Then run:
+- Pooled ridge forecast router predicts each source's absolute error from region, month/season, lead, regime, rolling MAE/RPS, disagreement, climatology deviation, source availability and known run age. Inverse-error weights sum to one and shrink toward the fixed baseline. Unsupported input combinations use a baseline.
+- Independent raw/corrected model, equal, fixed and contextual baselines remain eligible. Development data selects point and probability methods separately. The final test period reports results and never chooses methods.
+- Empirical source error distributions, probability bias/persistence correction, router probability correction and an experimental dry/wet occurrence plus conditional lognormal rainfall candidate are compared on identical cases. Probability correction never changes a point forecast.
+- An experimental 0–100 evidence index explains agreement, historical error, sample strength, freshness, similarity and eligible development calibration. Unknown factors contribute zero. Fixed score bins and score/error association describe performance; the index is not a weather probability or operational confidence guarantee.
+- Rainfall is the main dashboard demonstration, with source/selected weights, router explanations, disagreement, confidence factors, common-case ablation, per-threshold event verification and source freshness. Replay, observation reveal, outage simulation, navigation and IST formatting remain available.
+- Missing-source probability products have their own calibration and event gates. Two-source point fallback is tested on development data. Unsupported combinations and stale sources are withheld with reasons.
+- Observation import checks quality, finite values, units, coordinates, release timing, support metadata and exact rainfall windows. Raw payloads, model versions, missing sources and hashes remain auditable. Issuance records are immutable; latest snapshots are replaced atomically.
+
+## Current real data and its limits
+
+The active archive has **4,930 matched rows** across Mumbai, Pune, Chennai, Bengaluru and Delhi, spanning 10 April–21 September 2026. Six variable/lead products contain **990 final-test cases**. The audit matches **19,700 numeric values** against saved provider responses, preserves 20 genuine missing values, checks 2,472 raw response hashes, and verifies all 90 latest issued source values against 15 saved responses. Today's 30 September 00 UTC run has 30 point-only records.
+
+IFS/GFS/AIFS values are actual downloaded forecasts. The comparison reference is **ERA5 reanalysis, not IMD or station observations**. Seven-day reference release delay and six-hour model arrival delay are assumptions, not measured historical publication times. Provider grid locations are recorded separately from requested city coordinates; representativeness remains unverified. The archive covers April–September, not a full year or northeast monsoon.
+
+Rain is exactly 24 hours ending at 03:00 UTC / 08:30 IST. From a 00 UTC run this gives actual valid leads **27 and 75 hours**. Temperature and mean 10 m wind use 24 and 72 hours. Heavy, very heavy and extremely heavy rainfall are evaluated separately; temperature ≥40 °C is not a heat-wave declaration and mean wind is not a gust warning.
+
+Official observation acquisition was attempted, but IMD endpoints returned unauthorized responses or timed out. No station values were fabricated. Hazard publication requires verified observations/support, new test dates, at least 100 cases and 20 events per period, positive Brier skill, acceptable calibration and bounded sampling uncertainty. This is a research gate, not operational certification. The present reanalysis archive fails that gate; withheld fields are intentional. Details: [data-quality report](docs/data-quality-report.md).
+
+## Fetch, evaluate and issue
 
 ```powershell
-py -3.12 -m sih081 merge-observations observations.csv --cases data/archive/cases.csv
-py -3.12 -m sih081 evaluate data/observed/cases.csv --manifest data/observed/manifest.json
+py -3.12 -m sih081 fetch --start 2026-04-10 --days 165 --rain-window imd
+py -3.12 -m sih081 evaluate data/archive/cases.csv --manifest data/archive/manifest.json
+py -3.12 -m sih081 issue --run 2026-09-30T00:00
+py -3.12 scripts/check-real-data.py
 ```
 
-If issuing from that state, pass `--cases data/observed/cases.csv`; the issue command checks that its history file matches the evaluated manifest hash. The import fails on rain-window or location mismatches and keeps only matched targets. A nearby gauge is still a point measurement, while a model grid value represents an area; assess that representativeness before calling the scores station-verified skill. No official IMD observations are bundled with this repository.
+Fetch/issue/refresh default to all five locations. Issue requires the evaluated case-table hash, frozen selections preceding the run, and the assumed six-hour arrival delay. Freshness is based on model initialization: ≤12 hours fresh, >12–24 slightly stale, >24 excluded. Historical runs require explicit `--replay`, which labels the record as retrospective and assesses age at run +6 hours. Repeating the same run/state issue refuses to overwrite its record.
 
-`cases.csv` required columns: `issue_time,valid_time,observed_at,region,latitude,longitude,variable,lead_hours,observation,IFS,GFS,AIFS`. Optional columns: `observation_source,observation_quality,window_start,window_end`. Times are ISO 8601 UTC. Empty source cells represent missing inputs. Every row must identify one forecast target and contain an observation.
+`py -3.12 -m sih081 refresh` stages a rolling 165-day archive, evaluation and issue before promoting successful results. It preserves the current files if acquisition, evaluation or issuance fails. It also marks already reviewed test dates; a rolling rerun does not make the same test period fresh again. On Windows, `scripts/register-refresh.ps1` updates the existing daily 13:00 IST task for all five cities. The user must be signed in.
 
-The evaluation uses chronological train, validation and test periods. It fits empirical source error distributions, compares raw and bias-corrected individual sources with three point blends, and tests probability correction (PBC) against the raw blend. Validation selects a method per variable and lead. A held-out harm gate rejects a chosen method if it is materially worse than the simpler baseline; after such a rejection, a fresh untouched period is needed for a final skill claim. The report includes paired seven-day block intervals for point MAE and probability RPS differences. Use at least 120 distinct issue dates for adequate training history. Method decisions and displayed cases are saved in `output/state.json`.
+## Import actual observations
 
-The `issue` command requires a non-synthetic evaluation state and matched history. It retrieves the named run, applies the approved methods, and writes versioned immutable JSON and CSV forecast records to `output/issued`. The dashboard reads the most recent issued record. Issued records include source model IDs, retrieval timestamps, payload hashes, missing-source status, forecast windows, and the evaluation-state hash. The retrieval time is not the source's original publication time. Hazard probabilities are withheld individually when validation contains fewer than 10 matching events. Exact historical publication times are not established; the issue job assumes six hours of global-model latency for its observation-history gate and records that assumption.
+Prepare CSV columns `region,latitude,longitude,variable,valid_time,observation,observed_at,source,quality,window_start,window_end,unit`. Use timezone-aware timestamps, `quality=pass`, and units `°C`, `m/s` or `mm/24h`. Rain requires the exact 24-hour bounds; instantaneous variables require empty bounds. Coordinates must match within 0.01°.
 
-For a repeatable daily job after 06:00 UTC, run `py -3.12 -m sih081 refresh --regions Mumbai Pune`. It fetches a rolling 130-day archive ending early enough for the assumed observation delay, re-evaluates, and issues the day's 00 UTC run. Raw forecast downloads are cached, so later runs normally fetch only new dates. The command skips a run that already has an immutable forecast record. On Windows, `scripts/register-refresh.ps1` registers a 13:00 local daily task; it runs when the account is signed in. Check it with `Get-ScheduledTaskInfo -TaskName SIH26081-Refresh` and remove it with `Unregister-ScheduledTask -TaskName SIH26081-Refresh -Confirm:$false`.
+Also supply `observation_support`, `representativeness_status`, `representativeness_evidence`, `release_time_basis` and `source_url` where available. Declaring verified representativeness requires known support and evidence. Matching coordinates alone does not verify grid-versus-gauge comparability. Release time is when the observation became available, not download time.
 
-The dashboard now includes a held-out case replay with hidden/revealed observation, individual sources, point/probability contribution views, outage replay, reliability bins, event counts, and Debias++/Persistence++ component scores. All dashboard timestamps display in IST; stored data and calculations use UTC. Run `node tests/test_time.cjs` to check time conversion. Heavy, very heavy and extremely heavy rainfall thresholds are tracked separately. Heat-wave and gust products remain explicitly unavailable until matching daily maximum, normal, persistence and gust data exist. This is an exploratory pilot; it does not issue IMD warnings or claim reanalysis scores are station-verified operational improvements. See [context.md](context.md) for project state and next work.
+```powershell
+py -3.12 -m sih081 merge-observations observations.csv --strict
+py -3.12 -m sih081 evaluate data/observed/cases.csv --manifest data/observed/manifest.json --output output/observed
+py -3.12 -m sih081 issue --run YYYY-MM-DDT00:00 --cases data/observed/cases.csv --state output/observed/state.json --output output/observed/issued
+```
+
+Evaluate supplied observations separately before replacing the default dashboard. Legacy imports without units remain possible and explicitly unverified. ERA5/reanalysis/synthetic sources are rejected from the observation pathway. Freshness of the test calendar must be established in the manifest; absence of that evidence cannot approve a hazard product.
+
+## Checks
+
+```powershell
+py -3.12 -m unittest discover -s tests -v
+node tests/test_dashboard.cjs
+node tests/test_availability.cjs
+node tests/test_navigation.cjs
+node tests/test_time.cjs
+py -3.12 scripts/check-real-data.py
+```
+
+Dashboard checks run locally without browser control. The audit verifies saved data and hashes, not independent provider authentication. `demo` writes clearly synthetic samples and reports under `data/demo` and `output/demo`; it cannot overwrite the real dashboard state. See [context.md](context.md) for the implementation handoff.

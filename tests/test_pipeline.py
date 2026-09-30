@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from sih081 import __main__ as cli
-from sih081.data import demo_cases, merge_observations, read_cases, write_cases
+from sih081.data import PLACES, demo_cases, merge_observations, read_cases, write_cases
 from sih081.forecast import available_history, evaluate, monotone, paired_interval
 
 
@@ -40,15 +40,15 @@ class PipelineTest(unittest.TestCase):
             cases = Path(tmp) / "cases.csv"
             out = Path(tmp) / "out"
             write_cases(cases, demo_cases(125))
-            self.assertEqual(len(read_cases(cases)), 125 * 4 * 2 * 3)
+            self.assertEqual(len(read_cases(cases)), 125 * len(PLACES) * 2 * 3)
             report = evaluate(cases, out, {"kind": "synthetic_demo", "truth": "synthetic"})
             self.assertEqual(report["data_kind"], "synthetic_demo")
             self.assertEqual(len(report["results"]), 6)
             self.assertTrue(report["cases"])
             self.assertTrue((out / "state.json").exists())
             for product in report["results"]:
-                self.assertIn(product["point_method"], ("equal", "fixed", "adaptive", "IFS_corrected", "GFS_corrected", "AIFS_corrected"))
-                self.assertIn(product["probability_method"], ("raw", "pbc"))
+                self.assertIn(product["point_method"], product["validation"]["point"])
+                self.assertIn(product["probability_method"], product["validation"]["probability"])
                 self.assertGreater(product["test_n"], 0)
                 self.assertIn("reliability", product["test"]["probability"]["raw"])
 
