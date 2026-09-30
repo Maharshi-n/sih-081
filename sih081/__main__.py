@@ -168,8 +168,8 @@ def main() -> None:
                 else:
                     super().do_GET()
 
-        print(f"Dashboard: http://127.0.0.1:{args.port}")
-        ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()
+        print(f"Dashboard: http://127.0.0.1:{args.port} (listening on 0.0.0.0)")
+        ThreadingHTTPServer(("0.0.0.0", args.port), Handler).serve_forever()
 
 
 if __name__ == "__main__":

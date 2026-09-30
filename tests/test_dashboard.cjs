@@ -25,6 +25,7 @@ class Element {
   append(child) { child.parentElement = this; this.children.push(child); if (this.tagName === 'SELECT' && this.children.length === 1) this.value = child.value; }
   replaceChildren() { this.children = []; this._html = ''; if (this.tagName === 'SELECT') this.value = ''; }
   setAttribute(key, value) { this.attributes[key] = String(value); }
+  getAttribute(key) { return this.attributes[key] ?? null; }
   removeAttribute(key) { delete this.attributes[key]; }
   addEventListener(type, callback) { (this.listeners[type] ||= []).push(callback); }
   fire(type) { for (const callback of this.listeners[type] || []) callback({preventDefault() {}}); }
@@ -67,6 +68,36 @@ function change(app, id, value) { app.get(id).value = value; app.get(id).fire('c
   assert.equal(app.get('variable').value, 'rain', 'Rainfall must open first');
   assert.match(app.get('detailTime').textContent, /IST/);
   assert.equal(app.get('issuedRows').children.length, latest.records.length);
+  assert.match(app.get('statConfidenceSub').textContent, /not a weather probability/);
+  assert.match(app.get('statConfidence').textContent, /\/ 100/);
+  assert.match(app.get('statMaeSub').textContent, /Average absolute difference/);
+  assert.match(app.get('selectionSummary').textContent, /selected on development data/);
+  assert.match(content(app.get('weightRows')), /source-value/);
+  const initialForecast = app.get('statForecast').textContent;
+  app.get('presentation').fire('click');
+  assert(app.get('appShell').classList.contains('presentation'));
+  assert.equal(app.get('presentation').getAttribute('aria-pressed'), 'true');
+  assert.equal(app.get('statForecast').textContent, initialForecast);
+  change(app, 'weightMode', 'probability');
+  assert(app.get('appShell').classList.contains('presentation'), 'Contribution changes preserve focus view');
+  app.get('presentation').fire('click');
+  assert(!app.get('appShell').classList.contains('presentation'));
+  assert.equal(app.get('presentation').getAttribute('aria-pressed'), 'false');
+  change(app, 'weightMode', 'point');
+  const cityNames = new Set(saved.coverage.regions);
+  const cityLabels = [...app.get('map').innerHTML.matchAll(/<text x="([\d.]+)" y="([\d.]+)" text-anchor="(start|end)"[^>]*>([^<]+)<\/text>/g)]
+    .filter(match => cityNames.has(match[4])).map(([, x, y, anchor, name]) => {
+      const width = name.length * 7.2;
+      return {name, left: Number(x) - (anchor === 'end' ? width : 0), right: Number(x) + (anchor === 'start' ? width : 0), top: Number(y) - 11, bottom: Number(y) + 3};
+    });
+  assert.equal(cityLabels.length, cityNames.size);
+  for (const [i, label] of cityLabels.entries()) {
+    assert(label.left >= 0 && label.right <= 380, `${label.name} label must stay inside the map`);
+    for (const other of cityLabels.slice(i + 1)) {
+      assert(label.right <= other.left || other.right <= label.left || label.bottom <= other.top || other.bottom <= label.top,
+        `${label.name} and ${other.name} map labels overlap`);
+    }
+  }
   for (const link of app.links) { link.fire('click'); assert(link.classList.contains('active')); assert.equal(app.links.filter(x => x.classList.contains('active')).length, 1); }
   for (const variable of [...new Set(saved.cases.map(c => c.variable))]) {
     change(app, 'variable', variable);
@@ -120,6 +151,8 @@ function change(app, id, value) { app.get(id).value = value; app.get(id).fire('c
   assert.equal(fresh.get('statHazard').textContent, 'Withheld');
   assert.match(fresh.get('probReason').textContent, /gauge evidence/);
   assert.equal(fresh.get('confidenceScore').textContent, 'Not assessed for this scenario');
+  assert.equal(fresh.get('statConfidence').textContent, 'Not assessed');
+  assert.equal(fresh.get('publicationDetails').hidden, false);
   const selected = vm.runInContext('selected', fresh.context);
   const product = enriched.results.find(r => r.variable === selected.variable && r.lead_hours === selected.lead_hours);
   product.outages.IFS.event_approval.heavy = {approved: true, reasons: []};

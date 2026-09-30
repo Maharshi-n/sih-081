@@ -9,6 +9,10 @@ py -3.12 -m sih081 serve
 
 Open http://127.0.0.1:8765. The saved archive, evaluated state, latest issued record and source responses are included. Displayed times use IST; storage and calculations use UTC. Saved records do not automatically become live weather when the page is opened.
 
+The server binds to `0.0.0.0:8765`. Other devices on the same network can open `http://<this-computer-IP>:8765`; `0.0.0.0` is the listening address, not the address to enter on another device.
+
+For presentation screenshots or a recorded demo, press **Focus view** to expand the workspace. The first screen shows the three model inputs, learned weighting with baseline checks, selected forecast, experimental confidence and typical test error. Change location/horizon, explain the contributions, reveal the reference, then simulate a missing source. Data-source notes and withheld-product explanations remain accessible.
+
 ## What is implemented
 
 - Pooled ridge forecast router predicts each source's absolute error from region, month/season, lead, regime, rolling MAE/RPS, disagreement, climatology deviation, source availability and known run age. Inverse-error weights sum to one and shrink toward the fixed baseline. Unsupported input combinations use a baseline.
