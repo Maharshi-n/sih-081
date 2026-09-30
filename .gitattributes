@@ -1,2 +1,2 @@
-data/archive/** -text
-output/** -text
+data/archive/** -text whitespace=cr-at-eol
+output/** -text whitespace=cr-at-eol
